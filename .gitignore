@@ -1,1 +1,4 @@
 *.o
+*.skel.h
+*.swp
+vmlinux.h
