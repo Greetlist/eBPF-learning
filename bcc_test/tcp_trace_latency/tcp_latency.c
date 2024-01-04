@@ -44,17 +44,18 @@ int deal_with_established(struct pt_regs* ctx, struct sock* sk) {
     return 0;
   }
 
+  u16 dport = sk->__sk_common.skc_dport;
+
   struct record_info submit;
   __builtin_memset(&submit, 0, sizeof(struct record_info));
   submit.connect_start_us = si->connect_start_us;
   submit.connect_end_us = bpf_ktime_get_ns() / 1000ul;
   submit.pid = si->pid;
   __builtin_memcpy(submit.task_command, si->task_command, TS_COMM_LEN);
-  bpf_trace_printk("%u %u\n", sk->__sk_common.skc_rcv_saddr, sk->__sk_common.skc_daddr);
   submit.saddr = sk->__sk_common.skc_rcv_saddr;
   submit.daddr = sk->__sk_common.skc_daddr;
   submit.sport = sk->__sk_common.skc_num;
-  submit.dport = sk->__sk_common.skc_dport;
+  submit.dport = ntohs(dport);
 
   connect_events.perf_submit(ctx, &submit, sizeof(struct record_info));
   socket_map.delete(&sk);

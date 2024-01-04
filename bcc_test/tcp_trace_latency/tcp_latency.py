@@ -19,7 +19,7 @@ def print_connect_info(cpu, data, size):
         "{:<10} {:<10} {:<15} {:<6} {:<15} {:<6} {:<10}".format(
             info.pid, info.task_command.decode("utf-8", "replace"),
             socket.inet_ntop(socket.AF_INET, pack("I", info.saddr)), info.sport,
-            socket.inet_ntop(socket.AF_INET, pack("I", info.saddr)), info.dport,
+            socket.inet_ntop(socket.AF_INET, pack("I", info.daddr)), info.dport,
             #info.saddr, info.sport,
             #info.daddr, info.dport,
             (info.connect_end_us - info.connect_start_us) / 1000,
