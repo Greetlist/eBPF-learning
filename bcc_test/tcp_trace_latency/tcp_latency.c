@@ -6,14 +6,14 @@
 #include <linux/bpf.h>
 
 struct record_info {
-  uint64_t connect_start_us;
-  uint64_t connect_end_us;
-  uint32_t pid;
+  u64 connect_start_us;
+  u64 connect_end_us;
+  u32 pid;
   char task_command[TS_COMM_LEN];
-  uint32_t saddr;
-  uint32_t daddr;
-  uint16_t sport;
-  uint16_t dport;
+  u32 saddr;
+  u32 daddr;
+  u16 sport;
+  u16 dport;
 };
 BPF_HASH(socket_map, struct sock*, struct record_info);
 BPF_PERF_OUTPUT(connect_events);
@@ -25,9 +25,7 @@ int deal_with_active_connect(struct pt_regs* ctx, struct sock* sk) {
   si.pid = pid;
   si.connect_start_us = bpf_ktime_get_ns() / 1000ul;
   bpf_get_current_comm(&si.task_command, TS_COMM_LEN);
-  bpf_trace_printk("command: %s\n", si.task_command);
   socket_map.update(&sk, &si);
-  bpf_trace_printk("end of tcp_v4_connect\n");
   return 0;
 }
 
@@ -52,6 +50,7 @@ int deal_with_established(struct pt_regs* ctx, struct sock* sk) {
   submit.connect_end_us = bpf_ktime_get_ns() / 1000ul;
   submit.pid = si->pid;
   __builtin_memcpy(submit.task_command, si->task_command, TS_COMM_LEN);
+  bpf_trace_printk("%u %u\n", sk->__sk_common.skc_rcv_saddr, sk->__sk_common.skc_daddr);
   submit.saddr = sk->__sk_common.skc_rcv_saddr;
   submit.daddr = sk->__sk_common.skc_daddr;
   submit.sport = sk->__sk_common.skc_num;

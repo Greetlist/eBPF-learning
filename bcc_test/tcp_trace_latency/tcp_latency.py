@@ -1,11 +1,14 @@
 from bcc import BPF
 import argh
+import sys
+import socket
+from struct import pack
 
 b = None
 
 def print_header():
     print(
-        "{:<10} {:<20} {:<15} {:<15} {:<6} {:<6} {:<10}".format(
+        "{:<10} {:<10} {:<15} {:<6} {:<15} {:<6} {:<10}".format(
             "PID", "COMM", "SADDR", "SPORT", "DADDR", "DPORT", "LAT(ms)"
         )
     )
@@ -13,11 +16,13 @@ def print_header():
 def print_connect_info(cpu, data, size):
     info = b["connect_events"].event(data)
     print(
-        "{:<10} {:<20} {:<15} {:<15} {:<6} {:<6} {:<10}".format(
-            info.pid, info.task_command,
-            info.saddr, info.sport,
-            info.daddr, info.dport,
-            (info.connect_end_us - info.connet_start_us) / 1000,
+        "{:<10} {:<10} {:<15} {:<6} {:<15} {:<6} {:<10}".format(
+            info.pid, info.task_command.decode("utf-8", "replace"),
+            socket.inet_ntop(socket.AF_INET, pack("I", info.saddr)), info.sport,
+            socket.inet_ntop(socket.AF_INET, pack("I", info.saddr)), info.dport,
+            #info.saddr, info.sport,
+            #info.daddr, info.dport,
+            (info.connect_end_us - info.connect_start_us) / 1000,
         )
     )
 
