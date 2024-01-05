@@ -1,0 +1,47 @@
+#define MAX_SYMBOL_LEN 64
+
+struct invoke_info {
+  u64 invoke_total_count;
+  u64 invoke_total_time;
+  char symbol[MAX_SYMBOL_LEN];
+};
+BPF_HASH(symbol_map, char*, struct invoke_info);
+
+struct display_info {
+  u64 avg_invoke_time;
+  char symbol[MAX_SYMBOL_LEN];
+};
+BPF_PERF_OUTPUT(invoke_events);
+
+{% for symbol, function_pair in trace_symbol_dict.items() %}
+int {{ function_pair[0] }}(struct pt_regs* ctx) {
+  struct invoke_info* i = symbol_map.lookup();
+  if (i == NULL) {
+    struct invoke_info ii;
+    __buildin_memset(&ii, 0, sizeof(struct invoke_info));
+    ii.invoke_total_count = 0;
+    ii.invoke_total_time = 0;
+    __buildin_memcpy(ii.symbol, "{{ symbol }}", MAX_SYMBOL_LEN);
+    symbol_map.update(, &ii);
+  }
+  return 0;
+}
+
+int {{ function_pair[1] }}(struct pt_regs* ctx) {
+  struct invoke_info* i = symbol_map.lookup();
+  if (i == NULL) {
+    return 0;
+  }
+
+  i->invoke_total_count++;
+  i->invoke_total_time += 1;
+
+  if (i->invoke_total_count % {{ record_per_round }} == 0) {
+    struct display_info di;
+    __buildin_memset(&di, 0, sizeof(struct display_info));
+    di.avg_invoke_time = i->invoke_total_time / i->invoke_total_count;
+    __buildin_memcpy(di.symbol, "{{ symbol }}", MAX_SYMBOL_LEN);
+    invoke_events.perf_submit();
+  }
+}
+{% endfor %}
