@@ -1,16 +1,17 @@
 ## 原理
 
 Send SYN:
-    tcp_v4_connect
-Receive SYN+ACK and change `struct sock` to TCP_ESTABLISHED:
-    1. tcp_v4_do_rcv
-    2. tcp_rcv_state_process
-    3. tcp_rcv_synsent_state_process
-    4. tcp_finish_connect ##change state to TCP_ESTABLISHED
+    `tcp_v4_connect`
+
+Receive SYN+ACK and change `struct sock` to `TCP_ESTABLISHED`:
+    1. `tcp_v4_do_rcv`
+    2. `tcp_rcv_state_process`
+    3. `tcp_rcv_synsent_state_process`
+    4. `tcp_finish_connect ##change state to TCP_ESTABLISHED`
 
 Tracing Connection latency:
-    1. start_time at end of `tcp_v4_connect` function
-    2. end_time at end of `tcp_finish_connect` function
+    1. start\_time at end of `tcp_v4_connect` function
+    2. end\_time at end of `tcp_finish_connect` function
 
 Using BPF struct:
 ``` c
