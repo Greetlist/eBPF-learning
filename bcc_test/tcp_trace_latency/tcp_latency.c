@@ -44,6 +44,10 @@ int deal_with_established(struct pt_regs* ctx, struct sock* sk) {
     return 0;
   }
 
+  u64 test;
+  u64 add = 1;
+  __atomic_store(64, &test, &add, 5);
+
   u16 dport = sk->__sk_common.skc_dport;
 
   struct record_info submit;

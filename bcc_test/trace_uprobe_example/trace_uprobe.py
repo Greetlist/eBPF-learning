@@ -30,8 +30,6 @@ class TraceUserFunctionLatency:
         env = Environment(loader=FileSystemLoader(current_path))
         template = env.get_template(self.j2_file_name)
 
-        for symbol, function_pair in self.trace_symbol_dict.items():
-            print("[{}]: ({}, {})".format(symbol, function_pair[0], function_pair[1]))
         ret = template.render({
             "trace_symbol_dict": self.trace_symbol_dict,
             "record_per_round": self.record_per_round,
@@ -51,7 +49,6 @@ class TraceUserFunctionLatency:
                 if mode == "W" or mode == "w":
                     continue
                 ret_list.append(symbol_inst)
-        print(len(ret_list))
         return ret_list
     
     def print_elf_symbol_with_nm(self):
@@ -61,6 +58,7 @@ class TraceUserFunctionLatency:
         for s in symbol_list:
             print(s)
         print('*'*50)
+
 
 def start(program_path, symbol_regex=None, record_per_round=100, list_symbol=False, generate_c_file=True):
     if symbol_regex == None:
