@@ -59,6 +59,26 @@ class TraceUserFunctionLatency:
             print(s)
         print('*'*50)
 
+    def set_bpf(self, bpf):
+        self.bpf = bpf
+        self.bpf["invoke_events"].open_perf_buffer(self.print_invoke_info)
+
+    def print_header(self):
+        print(
+            "{:<64} {:<15} {:<15} {:<15}".format(
+                "Symbol", "InvokeCount", "InvokeTime", "AvgTime(ms)"
+            )
+        )
+
+    def print_invoke_info(self, cpu, data, size):
+        info = self.bpf["invoke_events"].event(data)
+        print(
+            "{:<64} {:<15} {:<15} {:<15}".format(
+                info.symbol.decode("utf-8", "replace"),
+                info.invoke_total_count, info.invoke_total_time,
+                info.invoke_total_time / info.invoke_total_count,
+            )
+        )
 
 def start(program_path, symbol_regex=None, record_per_round=100, list_symbol=False, generate_c_file=True):
     if symbol_regex == None:
@@ -81,6 +101,8 @@ def start(program_path, symbol_regex=None, record_per_round=100, list_symbol=Fal
         b.attach_uprobe(name=program_path, sym=symbol_name, fn_name=start_probe)
         b.attach_uretprobe(name=program_path, sym=symbol_name, fn_name=end_probe)
 
+    tf.set_bpf(b)
+    tf.print_header()
     while True:
         try:
             b.perf_buffer_poll()
