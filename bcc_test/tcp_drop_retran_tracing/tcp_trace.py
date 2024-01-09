@@ -17,8 +17,8 @@ class TcpTracing:
                 #"c_end_function": "deal_tcp_drop",
             },
             "retransmit": {
-                "type": "tracepoint",
-                "function": "tcp:tcp_retransmit_skb",
+                "type": "kprobe",
+                "function": "tcp_retransmit_skb",
                 "c_start_function": "deal_tcp_retransmit",
             },
         }
