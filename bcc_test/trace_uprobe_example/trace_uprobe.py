@@ -7,14 +7,13 @@ import time
 from jinja2 import Environment, FileSystemLoader
 
 class TraceUserFunctionLatency:
-    def __init__(self, program_path, symbol_regex, record_per_round):
+    def __init__(self, program_path, symbol_regex):
         self.program_path = program_path
         self.symbol_regex = symbol_regex
         self.trace_symbol_dict = dict()
 
         #generate related members
         self.trace_function_template = "trace_symbol_{}_{}"
-        self.record_per_round = record_per_round
         self.j2_file_name = "trace_uprobe.c.j2"
         self.c_file_name = "trace_uprobe.c"
 
@@ -33,7 +32,6 @@ class TraceUserFunctionLatency:
 
         ret = template.render({
             "trace_symbol_dict": self.trace_symbol_dict,
-            "record_per_round": self.record_per_round,
             "symbol_dict_len": len(self.symbol_dict),
         })
         with open(self.c_file_name, "w+") as f:
@@ -98,12 +96,12 @@ class TraceUserFunctionLatency:
     def get_invoke_counters(self):
         return self.bpf["invoke_counts"], self.bpf["invoke_time"]
 
-def start(program_path, symbol_regex=None, record_per_round=100, list_symbol=False, generate_c_file=True):
+def start(program_path, symbol_regex=None, list_symbol=False, generate_c_file=True):
     if symbol_regex == None:
         print("Must provide symbol_regex! Exit.")
         return
 
-    tf = TraceUserFunctionLatency(program_path, symbol_regex, record_per_round)
+    tf = TraceUserFunctionLatency(program_path, symbol_regex)
     if generate_c_file:
         print("Start to generate c file: [{}]".format(tf.c_file_name))
         tf.generate_c_file()
