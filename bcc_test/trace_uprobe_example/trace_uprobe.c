@@ -50,12 +50,5 @@ int trace_symbol_0_end(struct pt_regs* ctx) {
 
   invoke_counts.atomic_increment(i->symbol_index, 1);
   invoke_time.atomic_increment(i->symbol_index, bpf_ktime_get_ns() / 1000ul - i->invoke_start_us);
-
-  //if (invoke_counts[]% 100 == 0) {
-  //  struct display_info di = {0};
-  //  di.invoke_total_count = i->invoke_total_count;
-  //  di.invoke_total_time = i->invoke_total_time;
-  //  invoke_events.perf_submit(ctx, &di, sizeof(struct display_info));
-  //}
   return 0;
 }
