@@ -30,7 +30,7 @@ int deal_with_active_connect(struct pt_regs* ctx, struct sock* sk) {
 }
 
 int deal_with_established(struct pt_regs* ctx, struct sock* sk) {
-  // socket tcp state must be SYN_SENT, because of 
+  // socket tcp state must be SYN_SENT
   if (sk->__sk_common.skc_state != BPF_TCP_SYN_SENT) {
     return 0;
   }
@@ -43,10 +43,6 @@ int deal_with_established(struct pt_regs* ctx, struct sock* sk) {
   if (sk->__sk_common.skc_family != AF_INET) {
     return 0;
   }
-
-  u64 test;
-  u64 add = 1;
-  __atomic_store(64, &test, &add, 5);
 
   u16 dport = sk->__sk_common.skc_dport;
 
