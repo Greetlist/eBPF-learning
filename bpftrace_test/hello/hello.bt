@@ -1,0 +1,52 @@
+#!/usr/bin/bpftrace
+
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/socket.h>
+#include <net/sock.h>
+#else
+#include <sys/socket.h>
+#endif
+
+BEGIN
+{
+  printf("Hello World, tracing tcp_finish_connect function in kernel\n");
+  printf("%-8s %-16s ", "PID", "COMM");
+  printf("%-32s %-6s %-32s %-6s", "SADDR", "SPORT", "DADDR", "DPORT");
+  printf("%-12s\n", "STATE");
+}
+
+kprobe:tcp_v4_connect
+{
+  $sk = ((struct sock*) arg0);
+  $inet_family = $sk->__sk_common.skc_family;
+  if ($inet_family == AF_INET) {
+    $saddr = ntop($sk->__sk_common.skc_rcv_saddr);
+    $sport = $sk->__sk_common.skc_num;
+
+    $daddr = ntop($sk->__sk_common.skc_daddr);
+    $dport = $sk->__sk_common.skc_dport;
+    $dport = ($dport >> 8) | (($dport << 8) & 0x00FF00);
+
+    printf("%-8d %-16s ", pid, comm);
+    printf("%-32s %-6d %-32s %-6d", $saddr, $sport, $daddr, $dport);
+    printf("SYN_SENT\n");
+  }
+}
+
+kprobe:tcp_finish_connect
+{
+  $sk = ((struct sock*) arg0);
+  $inet_family = $sk->__sk_common.skc_family;
+  if ($inet_family == AF_INET) {
+    $saddr = ntop($sk->__sk_common.skc_rcv_saddr);
+    $sport = $sk->__sk_common.skc_num;
+
+    $daddr = ntop($sk->__sk_common.skc_daddr);
+    $dport = $sk->__sk_common.skc_dport;
+    $dport = ($dport >> 8) | (($dport << 8) & 0x00FF00);
+
+    printf("%-8d %-16s ", pid, comm);
+    printf("%-32s %-6d %-32s %-6d", $saddr, $sport, $daddr, $dport);
+    printf("ESTABLISHED\n");
+  }
+}
