@@ -1,0 +1,28 @@
+#!/usr/bin/bpftrace
+
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/socket.h>
+#include <net/sock.h>
+#else
+#include <sys/socket.h>
+#endif
+
+BEGIN
+{
+  printf("Start trace kernel function\n");
+  printf("%-8s %-16s ", "PID", "COMM");
+  printf("%-12s %-24s %-24s\n", "InvokeCount", "InvokeTime", "AvgTime(ns)");
+}
+
+kprobe:fib_table_lookup {
+  @invoke_count[0] = @invoke_count[0] + 1;
+  @start_time = nsecs;
+}
+
+kretprobe:fib_table_lookup /@invoke_count[0] != 0/ {
+  if (pid != 0) {
+    @invoke_time[0] = @invoke_time[0] + (nsecs - @start_time);
+    printf("%-8d %-16s ", pid, comm);
+    printf("%-12d %-24d %-24d\n", @invoke_count[0], @invoke_time[0], @invoke_time[0] / @invoke_count[0]);
+  }
+}
