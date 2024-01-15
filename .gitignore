@@ -5,3 +5,4 @@ vmlinux.h
 mini
 *.so
 xgt*
+a.out

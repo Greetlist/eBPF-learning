@@ -12,6 +12,9 @@ void local_inet_ntop(__u32 src, char* dst) {
   printf("%d.%d.%d.%d\n", bytes[0], bytes[1], bytes[2], bytes[3]);
   for (int i = 0; i < 4; ++i) {
     int section_len = 0;
+    if (bytes[i] == 0) {
+      dst[index++] = '0';
+    }
     while (bytes[i] != 0) {
       unsigned char c = bytes[i] % 10 + 48;
       bytes[i] /= 10;
@@ -34,7 +37,7 @@ void local_inet_ntop(__u32 src, char* dst) {
 
 int main(int argc, char** argv) {
   char dst[64];
-  __u32 ip = 40151232;
+  __u32 ip = 4278190081;
   local_inet_ntop(ip, dst);
   printf("%s\n", dst);
   return 0;
