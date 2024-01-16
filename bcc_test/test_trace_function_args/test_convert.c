@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <linux/types.h>
 #include <arpa/inet.h>
+#include <string.h>
 
 void local_inet_ntop(__u32 src, char* dst) {
   int index = 0;
@@ -9,7 +10,7 @@ void local_inet_ntop(__u32 src, char* dst) {
   bytes[1] = (src >> 8) & 0XFF;
   bytes[2] = (src >> 16) & 0XFF;
   bytes[3] = (src >> 24) & 0XFF;
-  printf("%d.%d.%d.%d\n", bytes[0], bytes[1], bytes[2], bytes[3]);
+  //printf("%d.%d.%d.%d\n", bytes[0], bytes[1], bytes[2], bytes[3]);
   for (int i = 0; i < 4; ++i) {
     int section_len = 0;
     if (bytes[i] == 0) {
@@ -36,9 +37,17 @@ void local_inet_ntop(__u32 src, char* dst) {
 }
 
 int main(int argc, char** argv) {
+  __u32 ip = 29862080;
   char dst[64];
-  __u32 ip = 4278190081;
+  memset(dst, 0, 64);
   local_inet_ntop(ip, dst);
   printf("%s\n", dst);
+  //__u32 ip = 4278190081;
+  //for (int i = 0; i < 256; ++i) {
+  //  char dst[64];
+  //  memset(dst, 0, 64);
+  //  local_inet_ntop(ip + i, dst);
+  //  printf("%s\n", dst);
+  //}
   return 0;
 }
